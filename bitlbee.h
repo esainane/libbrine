@@ -42,6 +42,8 @@ typedef enum {
   B_EV_FLAG_FORCE_ONCE = 1 << 16,
   B_EV_FLAG_FORCE_REPEAT = 1 << 17,
 } b_input_condition;
+
+typedef char *(*set_eval) (struct set *set, char *value);
 typedef gboolean (*b_event_handler)(gpointer data, gint fd, b_input_condition cond);
 typedef void (*http_input_function)(struct http_request *);
 typedef void (*query_callback) (void *data);
@@ -104,26 +106,33 @@ typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
 bee_user_t *bee_user_by_handle(bee_t *bee, struct im_connection *ic, const char *handle);
 bee_user_t *bee_user_new(bee_t *bee, struct im_connection *ic, const char *handle, bee_user_flags_t flags);
+char *set_eval_account(set_t *set, char *value);
 char *set_getstr(set_t **head, const char *key);
 char *sha1_random_uuid(sha1_state_t * context);
 #define debug(text ...) imcb_log(ic, text);
 gboolean root_command_add(const char *command, int params, void (*func)(irc_t *, char **args), int flags);
+gboolean ssl_sockerr_again(void *ssl);
 gint b_input_add(gint source, b_input_condition condition, b_event_handler function, gpointer data);
 gint b_timeout_add(gint timeout, b_event_handler function, gpointer data);
 int bool2int(char *value);
+int is_bool(char *value);
 int set_getbool(set_t **head, const char *key);
 int set_getint(set_t **head, const char *key);
+int set_reset(set_t **head, const char *key);
 int set_setint(set_t **head, const char *key, int value);
 int set_setstr(set_t **head, const char *key, char *value);
 int ssl_getfd(void *conn);
+int ssl_read(void *conn, char *buf, int len);
 int ssl_write(void *conn, const char *buf, int len);
 int url_set(url_t *url, const char *set_url);
 json_value * json_parse_ex(json_settings * settings, const json_char * json, size_t length, char * error);
+set_t *set_add(set_t **head, const char *key, const char *def, set_eval eval, void *data);
 set_t *set_find(set_t **head, const char *key);
 struct bee_user *imcb_buddy_by_handle(struct im_connection *ic, const char *handle);
 struct groupchat *bee_chat_by_title(bee_t *bee, struct im_connection *ic, const char *title);
 struct groupchat *imcb_chat_new(struct im_connection *ic, const char *handle);
 struct http_request *http_dorequest(char *host, int port, int ssl, char *request, http_input_function func, gpointer data);
+struct im_connection *imcb_new(account_t *acc);
 void account_off(bee_t *bee, account_t *a);
 void account_on(bee_t *bee, account_t *a);
 void b_event_remove(gint id);
