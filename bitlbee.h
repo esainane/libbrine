@@ -1,3 +1,6 @@
+#ifndef BITLBEE_H
+#define BITLBEE_H
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -15,6 +18,89 @@
 #include <syslog.h>
 #include <glib.h>
 #include <gmodule.h>
+
+struct http_request;
+struct im_connection;
+struct prpl;
+struct set;
+typedef struct set set_t;
+typedef struct bee bee_t;
+typedef enum {
+        BEE_USER_ONLINE = 1,    /* Compatibility with old OPT_LOGGED_IN flag */
+        BEE_USER_AWAY = 4,      /* Compatibility with old OPT_AWAY flag */
+        BEE_USER_MOBILE = 8,    /* Compatibility with old OPT_MOBILE flag */
+        BEE_USER_LOCAL = 256,   /* Locally-added contacts (not in real contact list) */
+        BEE_USER_SPECIAL = 512, /* Denotes a user as being special */
+        BEE_USER_NOOTR = 4096,  /* Per-user version of OPT_NOOTR */
+} bee_user_flags_t;
+typedef struct bee_user bee_user_t;
+typedef struct account account_t;
+
+typedef enum {
+  B_EV_IO_READ = 1 << 0,
+  B_EV_IO_WRITE = 1 << 1,
+  B_EV_FLAG_FORCE_ONCE = 1 << 16,
+  B_EV_FLAG_FORCE_REPEAT = 1 << 17,
+} b_input_condition;
+typedef gboolean (*b_event_handler)(gpointer data, gint fd, b_input_condition cond);
+typedef void (*http_input_function)(struct http_request *);
+typedef void (*query_callback) (void *data);
+
+typedef enum {
+        USTATUS_OFFLINE = 0,
+        USTATUS_AUTHORIZED = 1, /* Gave the correct server password (PASS). */
+        USTATUS_LOGGED_IN = 2,  /* USER+NICK(+PASS) finished. */
+        USTATUS_IDENTIFIED = 4, /* To NickServ (root). */
+        USTATUS_SHUTDOWN = 8,   /* Now used to indicate we're shutting down.
+                                   Currently just blocks irc_vawrite(). */
+        USTATUS_CAP_PENDING = 16,
+        USTATUS_SASL_PLAIN_PENDING = 32,
+
+        /* Not really status stuff, but other kinds of flags: For slightly
+           better password security, since the only way to send passwords
+           to the IRC server securely (i.e. not echoing to screen or written
+           to logfiles) is the /OPER command, try to use that command for
+           stuff that matters. */
+        OPER_HACK_IDENTIFY = 0x100,
+        OPER_HACK_IDENTIFY_NOLOAD = 0x01100,
+        OPER_HACK_IDENTIFY_FORCE  = 0x02100,
+        OPER_HACK_REGISTER = 0x200,
+        OPER_HACK_ACCOUNT_PASSWORD = 0x400,
+        OPER_HACK_ANY = 0x3700, /* To check for them all at once. */
+
+        IRC_UTF8_NICKS = 0x10000, /* Disable ASCII restrictions on buddy nicks. */
+} irc_status_t;
+typedef struct irc irc_t;
+typedef struct url url_t;
+
+#ifndef json_char
+#define json_char char
+#endif
+#ifndef json_int_t
+   #ifndef _MSC_VER
+      #include <inttypes.h>
+      #define json_int_t int64_t
+   #else
+      #define json_int_t __int64
+   #endif
+#endif
+
+struct json_settings;
+typedef enum {
+        json_none,
+        json_object,
+        json_array,
+        json_integer,
+        json_double,
+        json_string,
+        json_boolean,
+        json_null
+
+} json_type;
+typedef struct _json_value json_value;
+typedef GChecksum *sha1_state_t;
+typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
+
 
 bee_user_t *bee_user_by_handle(bee_t *bee, struct im_connection *ic, const char *handle);
 bee_user_t *bee_user_new(bee_t *bee, struct im_connection *ic, const char *handle, bee_user_flags_t flags);
@@ -72,3 +158,5 @@ void sha1_append(sha1_state_t *ctx, const guint8 * message_array, guint len);
 void sha1_init(sha1_state_t *ctx);
 void *ssl_connect(char *host, int port, gboolean verify, ssl_input_function func, gpointer data);
 void ssl_disconnect(void *conn_);
+
+#endif
