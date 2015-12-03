@@ -75,31 +75,6 @@ typedef enum {
 typedef struct irc irc_t;
 typedef struct url url_t;
 
-#ifndef json_char
-#define json_char char
-#endif
-#ifndef json_int_t
-   #ifndef _MSC_VER
-      #include <inttypes.h>
-      #define json_int_t int64_t
-   #else
-      #define json_int_t __int64
-   #endif
-#endif
-
-struct json_settings;
-typedef enum {
-        json_none,
-        json_object,
-        json_array,
-        json_integer,
-        json_double,
-        json_string,
-        json_boolean,
-        json_null
-
-} json_type;
-typedef struct _json_value json_value;
 typedef GChecksum *sha1_state_t;
 typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
@@ -125,7 +100,6 @@ int ssl_getfd(void *conn);
 int ssl_read(void *conn, char *buf, int len);
 int ssl_write(void *conn, const char *buf, int len);
 int url_set(url_t *url, const char *set_url);
-json_value * json_parse_ex(json_settings * settings, const json_char * json, size_t length, char * error);
 set_t *set_add(set_t **head, const char *key, const char *def, set_eval eval, void *data);
 set_t *set_find(set_t **head, const char *key);
 struct bee_user *imcb_buddy_by_handle(struct im_connection *ic, const char *handle);
@@ -158,7 +132,6 @@ void imcb_log(struct im_connection *ic, char *format, ...) G_GNUC_PRINTF(2, 3);
 void imcb_remove_buddy(struct im_connection *ic, const char *handle, char *group);
 void imcb_rename_buddy(struct im_connection *ic, const char *handle, const char *realname);
 void imc_logout(struct im_connection *ic, int allow_reconnect);
-void json_value_free(json_value * value);
 void log_message(int level, const char *message, ...) G_GNUC_PRINTF(2, 3);
 void op_log_message(void *opdata, const char *message);
 void random_bytes(unsigned char *buf, int count);

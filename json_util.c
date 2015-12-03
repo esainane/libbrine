@@ -21,15 +21,47 @@
 *                                                                           *
 ****************************************************************************/
 
-#include "json.h"
+#include <stdlib.h>
+#include <string.h>
+#include <glib.h>
 
-#define JSON_O_FOREACH(o, k, v) \
-	char *k; json_value *v; int __i; \
-	for (__i = 0; (__i < (o)->u.object.length) && \
-	     (k = (o)->u.object.values[__i].name) && \
-	     (v = (o)->u.object.values[__i].value); \
-	     __i ++)
+#include "json_util.h"
 
-json_value *json_o_get(const json_value *obj, const json_char *name);
-const char *json_o_str(const json_value *obj, const json_char *name);
-char *json_o_strdup(const json_value *obj, const json_char *name);
+json_value *json_o_get(const json_value *obj, const json_char *name)
+{
+	int i;
+
+	if (!obj || obj->type != json_object) {
+		return NULL;
+	}
+
+	for (i = 0; i < obj->u.object.length; ++i) {
+		if (strcmp(obj->u.object.values[i].name, name) == 0) {
+			return obj->u.object.values[i].value;
+		}
+	}
+
+	return NULL;
+}
+
+const char *json_o_str(const json_value *obj, const json_char *name)
+{
+	json_value *ret = json_o_get(obj, name);
+
+	if (ret && ret->type == json_string) {
+		return ret->u.string.ptr;
+	} else {
+		return NULL;
+	}
+}
+
+char *json_o_strdup(const json_value *obj, const json_char *name)
+{
+	json_value *ret = json_o_get(obj, name);
+
+	if (ret && ret->type == json_string && ret->u.string.ptr) {
+		return g_memdup(ret->u.string.ptr, ret->u.string.length + 1);
+	} else {
+		return NULL;
+	}
+}
