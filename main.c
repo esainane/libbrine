@@ -54,9 +54,9 @@ void load_plugins(void)
 }
 
 int main(void) {
-  log_link(LOGLVL_ERROR, LOGOUTPUT_CONSOLE);
-  log_link(LOGLVL_WARNING, LOGOUTPUT_CONSOLE);
-  log_link(LOGLVL_INFO, LOGOUTPUT_CONSOLE);
+  // log_link(LOGLVL_ERROR, LOGOUTPUT_CONSOLE);
+  // log_link(LOGLVL_WARNING, LOGOUTPUT_CONSOLE);
+  // log_link(LOGLVL_INFO, LOGOUTPUT_CONSOLE);
   load_plugins();
 
   return 0;

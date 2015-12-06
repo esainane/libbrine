@@ -20,6 +20,48 @@
 #include <glib.h>
 #include <gmodule.h>
 
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
+#define BITLBEE_VERSION "3.4.1"
+
+
+#define event_debug(x ...)
+
+
+#define sock_make_nonblocking(fd) fcntl(fd, F_SETFL, O_NONBLOCK)
+#define sock_make_blocking(fd) fcntl(fd, F_SETFL, 0)
+#define sockerr_again() (errno == EINPROGRESS || errno == EINTR || errno == EAGAIN)
+
+#define MAX_STRING 511
+
+#define PROTO_HTTP      2
+#define PROTO_HTTPS     5
+
+#define SSL_OK            0
+#define SSL_NOHANDSHAKE   1
+#define SSL_AGAIN         2
+
+extern int ssl_errno;
+
+
+typedef enum {
+	LOGLVL_INFO,
+	LOGLVL_WARNING,
+	LOGLVL_ERROR,
+#ifdef DEBUG
+	LOGLVL_DEBUG,
+#endif
+} loglvl_t;
+typedef enum {
+	LOGOUTPUT_NULL,
+	LOGOUTPUT_IRC,
+	LOGOUTPUT_SYSLOG,
+	LOGOUTPUT_CONSOLE,
+} logoutput_t;
 struct prpl;
 typedef enum {
         BEE_USER_ONLINE = 1,    /* Compatibility with old OPT_LOGGED_IN flag */
@@ -31,6 +73,8 @@ typedef enum {
 } bee_user_flags_t;
 typedef struct bee_user bee_user_t;
 typedef struct account account_qt;
+struct set;
+struct http_request;
 
 typedef enum {
   B_EV_IO_READ = 1 << 0,

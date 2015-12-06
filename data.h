@@ -1,3 +1,19 @@
+
+
+typedef enum {
+	SET_NOSAVE = 0x0001,   /* Don't save this setting (i.e. stored elsewhere). */
+	SET_NULL_OK = 0x0100,  /* set->value == NULL is allowed. */
+	SET_HIDDEN = 0x0200,   /* Don't show up in setting lists. Mostly for internal storage. */
+	SET_PASSWORD = 0x0400, /* Value shows up in settings list as "********". */
+	SET_HIDDEN_DEFAULT = 0x0800, /* Hide unless changed from default. */
+} set_flags_t;
+
+typedef struct set {
+  set_flags_t flags;
+} set_t;
+
+typedef struct file_transfer {} file_transfer_t;
+
 typedef struct bee {
   struct set *set;
   struct bee_user *users;
@@ -34,16 +50,14 @@ typedef struct irc {
 	struct bee *b;
 } irc_t;
 
+typedef struct irc_user {} irc_user_t;
+
 struct groupchat {
 	struct im_connection *ic;
 	GList *in_room;
 	char *title;
 	void *ui_data;
 };
-
-typedef struct set {
-  set_flags_t flags;
-} set_t;
 
 struct prpl {
         int options;
@@ -185,6 +199,45 @@ typedef struct url {
   char pass[MAX_STRING + 1];
 } url_t;
 
-struct http_request {
+typedef enum http_client_flags {
+	HTTPC_STREAMING = 1,
+	HTTPC_EOF = 2,
+	HTTPC_CHUNKED = 4,
 
+	/* Let's reserve 0x1000000+ for lib users. */
+} http_client_flags_t;
+
+struct http_request {
+	char *request;          /* The request to send to the server. */
+	int request_length;     /* Its size. */
+	short status_code;      /* The numeric HTTP status code. (Or -1
+	                           if something really went wrong) */
+	char *status_string;    /* The error text. */
+	char *reply_headers;
+	char *reply_body;
+	int body_size;          /* The number of bytes in reply_body. */
+	short redir_ttl;        /* You can set it to 0 if you don't want
+	                           http_client to follow them. */
+
+	http_client_flags_t flags;
+
+	http_input_function func;
+	gpointer data;
+
+	/* Please don't touch the things down here, you shouldn't need them. */
+	void *ssl;
+	int fd;
+
+	int inpa;
+	int bytes_written;
+	int bytes_read;
+	int content_length;     /* "Content-Length:" header or -1 */
+
+	/* Used in streaming mode. Caller should read from reply_body. */
+	char *sbuf;
+	size_t sblen;
+
+	/* Chunked encoding only. Raw chunked stream is decoded from here. */
+	char *cbuf;
+	size_t cblen;
 };

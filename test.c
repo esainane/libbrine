@@ -28,7 +28,7 @@
 #define MOCKVA(x, args...) x(args) G_GNUC_PRINTF(NARG_NARG(args) - 1, NARG_NARG(args));
 #include "test.h"
 
-int main(void) {
+int testmain(void) {
   TESTVA(void test, 1,2,...);
   test(NARG_NARG(1,...));
   test(NARG_NARG(...));
