@@ -62,7 +62,7 @@ MOCK(void imcb_remove_buddy,struct im_connection *ic, const char *handle, char *
 MOCK(void imcb_rename_buddy,struct im_connection *ic, const char *handle, const char *realname)
 MOCK(void imc_logout,struct im_connection *ic, int allow_reconnect)
 MOCKVA(void irc_rootmsg,irc_t *irc, char *format, ...)
-MOCKVA(void log_message,int level, const char *message, ...)
+// MOCKVA(void log_message,int level, const char *message, ...)
 MOCK(void op_log_message,void *opdata, const char *message)
 MOCK(void random_bytes,unsigned char *buf, int count)
 MOCK(void register_protocol,struct prpl *p)

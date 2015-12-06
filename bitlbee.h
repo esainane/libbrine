@@ -65,20 +65,6 @@ extern int ssl_errno;
 #define OPT_SELFMESSAGE 0x00080000 /* A message sent by self from another location */
 
 
-typedef enum {
-	LOGLVL_INFO,
-	LOGLVL_WARNING,
-	LOGLVL_ERROR,
-#ifdef DEBUG
-	LOGLVL_DEBUG,
-#endif
-} loglvl_t;
-typedef enum {
-	LOGOUTPUT_NULL,
-	LOGOUTPUT_IRC,
-	LOGOUTPUT_SYSLOG,
-	LOGOUTPUT_CONSOLE,
-} logoutput_t;
 struct prpl;
 typedef enum {
         BEE_USER_ONLINE = 1,    /* Compatibility with old OPT_LOGGED_IN flag */
@@ -148,6 +134,7 @@ typedef GChecksum *sha1_state_t;
 typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
 #include "http_client.h"
+#include "set.h"
 
 #include "data.h"
 
@@ -162,6 +149,6 @@ typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 #undef MOCKVA
 
 
-#include "set.h"
+#include "log.h"
 
 #endif

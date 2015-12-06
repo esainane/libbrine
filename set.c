@@ -1,4 +1,7 @@
 
+#include "set.h"
+#include <stdarg.h>
+#include <glib.h>
 
 char *SET_INVALID = "nee";
 
