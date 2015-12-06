@@ -9,6 +9,8 @@ typedef enum {
 } set_flags_t;
 
 typedef struct set {
+	void *data;
+  char *value;
   set_flags_t flags;
 } set_t;
 
@@ -16,17 +18,32 @@ typedef struct file_transfer {} file_transfer_t;
 
 typedef struct bee {
   struct set *set;
-  struct bee_user *users;
+	GSList *users;  /* struct bee_user */
 	struct account *accounts; /* TODO(wilmer): Use GSList here too? */
 	void *ui_data;
 } bee_t;
 
+struct buddy_action {
+	char *name;
+	char *description;
+};
+
+typedef enum {
+	ACC_SET_OFFLINE_ONLY = 0x02,    /* Allow changes only if the acct is offline. */
+	ACC_SET_ONLINE_ONLY = 0x04,     /* Allow changes only if the acct is online. */
+} account_set_flag_t;
+
 typedef struct account {
 	struct prpl *prpl;
-  char *tag;
 	char *user;
 	char *pass;
+
+  char *tag;
+
+	int reconnect;
+
   set_t *set;
+
   struct bee *bee ;
   struct im_connection *ic;
 	struct account *next;
@@ -36,13 +53,17 @@ struct im_connection {
 	account_t *acc;
   uint32_t flags;
 	void *proto_data;
+	GSList *deny;
 	bee_t *bee;
+	GSList *groupchats;
 };
 
 typedef struct bee_user {
   struct im_connection *ic;
 	char *handle;
+	char *status_msg; /* Status and/or away message. */
   void *data;
+	bee_user_flags_t flags;
 } bee_user_t;
 
 typedef struct irc {
@@ -50,12 +71,35 @@ typedef struct irc {
 	struct bee *b;
 } irc_t;
 
-typedef struct irc_user {} irc_user_t;
+typedef struct irc_channel {
+	char *name;
+  int flags;
+  struct set *set;
+	const struct irc_channel_funcs *f;
+} irc_channel_t;
+
+typedef struct irc_user {
+	struct bee_user *bu;
+} irc_user_t;
+
+
+struct irc_channel_funcs {
+	gboolean (*privmsg)(irc_channel_t *ic, const char *msg);
+	gboolean (*join)(irc_channel_t *ic);
+	gboolean (*part)(irc_channel_t *ic, const char *msg);
+	gboolean (*topic)(irc_channel_t *ic, const char *new_topic);
+	gboolean (*invite)(irc_channel_t *ic, irc_user_t *iu);
+	void (*kick)(irc_channel_t *ic, irc_user_t *iu, const char *msg);
+
+	gboolean (*_init)(irc_channel_t *ic);
+	gboolean (*_free)(irc_channel_t *ic);
+};
 
 struct groupchat {
 	struct im_connection *ic;
 	GList *in_room;
 	char *title;
+	void *data;
 	void *ui_data;
 };
 

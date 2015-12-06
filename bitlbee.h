@@ -26,8 +26,11 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#define PACKAGE "BitlBeeMock"
 #define BITLBEE_VERSION "3.4.1"
-
+#define VERSION BITLBEE_VERSION
+#define BITLBEE_VER(a, b, c) (((a) << 16) + ((b) << 8) + (c))
+#define BITLBEE_VERSION_CODE BITLBEE_VER(3, 4, 1)
 
 #define event_debug(x ...)
 
@@ -46,6 +49,20 @@
 #define SSL_AGAIN         2
 
 extern int ssl_errno;
+
+#define OPT_LOGGED_IN   0x00000001
+#define OPT_LOGGING_OUT 0x00000002
+#define OPT_AWAY        0x00000004
+#define OPT_MOBILE      0x00000008
+#define OPT_DOES_HTML   0x00000010
+#define OPT_LOCALBUDDY  0x00000020 /* For nicks local to one groupchat */
+#define OPT_SLOW_LOGIN  0x00000040 /* I.e. Twitter Oauth @ login time */
+#define OPT_TYPING      0x00000100 /* Some pieces of code make assumptions */
+#define OPT_THINKING    0x00000200 /* about these values... Stupid me! */
+#define OPT_NOOTR       0x00001000 /* protocol not suitable for OTR */
+#define OPT_PONGS       0x00010000 /* Service sends us keep-alives */
+#define OPT_PONGED      0x00020000 /* Received a keep-alive during last interval */
+#define OPT_SELFMESSAGE 0x00080000 /* A message sent by self from another location */
 
 
 typedef enum {
@@ -85,7 +102,6 @@ typedef enum {
 
 typedef char *(*set_eval) (struct set *set, char *value);
 typedef gboolean (*b_event_handler)(gpointer data, gint fd, b_input_condition cond);
-typedef void (*http_input_function)(struct http_request *);
 typedef void (*query_callback) (void *data);
 
 typedef enum {
@@ -112,11 +128,26 @@ typedef enum {
 
         IRC_UTF8_NICKS = 0x10000, /* Disable ASCII restrictions on buddy nicks. */
 } irc_status_t;
+
+#define CTYPES "&#"
+
+typedef enum {
+	IRC_CHANNEL_JOINED = 1, /* The user is currently in the channel. */
+	IRC_CHANNEL_TEMP = 2,   /* Erase the channel when the user leaves,
+	                           and don't save it. */
+
+	/* Hack: Set this flag right before jumping into IM when we expect
+	   a call to imcb_chat_new(). */
+	IRC_CHANNEL_CHAT_PICKME = 0x10000,
+} irc_channel_flags_t;
+
 typedef struct irc irc_t;
 typedef struct url url_t;
 
 typedef GChecksum *sha1_state_t;
 typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
+
+#include "http_client.h"
 
 #include "data.h"
 
@@ -129,5 +160,8 @@ typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
 #undef MOCK
 #undef MOCKVA
+
+
+#include "set.h"
 
 #endif
