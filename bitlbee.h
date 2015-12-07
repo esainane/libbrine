@@ -79,16 +79,10 @@ typedef struct account account_qt;
 struct set;
 struct http_request;
 
-typedef enum {
-  B_EV_IO_READ = 1 << 0,
-  B_EV_IO_WRITE = 1 << 1,
-  B_EV_FLAG_FORCE_ONCE = 1 << 16,
-  B_EV_FLAG_FORCE_REPEAT = 1 << 17,
-} b_input_condition;
-
 typedef char *(*set_eval) (struct set *set, char *value);
-typedef gboolean (*b_event_handler)(gpointer data, gint fd, b_input_condition cond);
 typedef void (*query_callback) (void *data);
+
+#include "events.h"
 
 typedef enum {
         USTATUS_OFFLINE = 0,
