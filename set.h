@@ -12,9 +12,18 @@ typedef enum {
 
 typedef struct set {
 	void *data;
+	char *key;
   char *value;
+	char *def;
   set_flags_t flags;
+	struct set *next;
 } set_t;
+
+#define set_value(set) ((set)->value) ? ((set)->value) : ((set)->def)
+
+set_t *set_find(set_t **head, const char *key);
+int set_getbool(set_t **head, const char *key);
+char *set_getstr(set_t **head, const char *key);
 
 /* Two very useful generic evaluators. */
 char *set_eval_int(set_t *set, char *value);

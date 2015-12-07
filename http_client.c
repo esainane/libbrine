@@ -36,6 +36,28 @@ static gboolean http_ssl_connected(gpointer data, int returncode, void *source, 
 static gboolean http_incoming_data(gpointer data, int source, b_input_condition cond);
 static void http_free(struct http_request *req);
 
+/* Warning: This one explodes the string. Worst-cases can make the string 3x its original size! */
+/* This function is safe, but make sure you call it safely as well! */
+void http_encode(char *s)
+{
+	char t[strlen(s) + 1];
+	int i, j;
+
+	strcpy(t, s);
+	for (i = j = 0; t[i]; i++, j++) {
+		/* Warning: g_ascii_isalnum() is locale-aware, so don't use it here! */
+		if ((t[i] >= 'A' && t[i] <= 'Z') ||
+		    (t[i] >= 'a' && t[i] <= 'z') ||
+		    (t[i] >= '0' && t[i] <= '9') ||
+		    strchr("._-~", t[i])) {
+			s[j] = t[i];
+		} else {
+			sprintf(s + j, "%%%02X", ((unsigned char *) t)[i]);
+			j += 2;
+		}
+	}
+	s[j] = 0;
+}
 
 struct http_request *http_dorequest(char *host, int port, int ssl, char *request, http_input_function func,
                                     gpointer data)

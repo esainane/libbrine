@@ -138,6 +138,8 @@ typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
 #include "data.h"
 
+#include "main.h"
+
 #include "narg.h"
 
 #define MOCK(x, args...) x(args);
