@@ -10,21 +10,19 @@ typedef enum {
 	SET_HIDDEN_DEFAULT = 0x0800, /* Hide unless changed from default. */
 } set_flags_t;
 
-typedef struct set {
-	void *data;
-	char *key;
-  char *value;
-	char *def;
-  set_flags_t flags;
-	struct set *next;
-} set_t;
+struct set;
+typedef struct set set_t;
 
-#define set_value(set) ((set)->value) ? ((set)->value) : ((set)->def)
+typedef char *(*set_eval) (void *data, char *value);
 
-set_t *set_find(set_t **head, const char *key);
-int set_getbool(set_t **head, const char *key);
+void set_add(set_t **head, const char *key, const char *def, set_eval eval, void *data);
+void set_add_with_flags(set_t **head, const char *key, const char *def, set_eval eval, void *data, set_flags_t flags);
 char *set_getstr(set_t **head, const char *key);
+int set_getint(set_t **head, const char *key);
+int set_getbool(set_t **head, const char *key);
+int bool2int(char *value);
+int set_setstr(set_t **head, const char *key, char *value);
 
 /* Two very useful generic evaluators. */
-char *set_eval_int(set_t *set, char *value);
-char *set_eval_bool(set_t *set, char *value);
+char *set_eval_int(void *data, char *value);
+char *set_eval_bool(void *data, char *value);

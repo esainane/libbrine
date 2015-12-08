@@ -1,10 +1,99 @@
+/********************************************************************\
+  * BitlBee -- An IRC to other IM-networks gateway                     *
+  *                                                                    *
+  * Copyright 2002-2006 Wilmer van der Gaast and others                *
+  \********************************************************************/
+
+/*
+ * Event handling (using GLib)
+ */
+
+/*
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License with
+  the Debian GNU/Linux distribution in /usr/share/common-licenses/GPL;
+  if not, write to the Free Software Foundation, Inc., 51 Franklin St.,
+  Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+
 #include "events.h"
+
+#include "log.h"
+
+#define GAIM_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
+#define GAIM_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
+#define GAIM_ERR_COND   (G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 typedef struct _GaimIOClosure {
 	b_event_handler function;
 	gpointer data;
 	guint flags;
 } GaimIOClosure;
+
+
+static GMainLoop *loop = NULL;
+
+void b_main_init()
+{
+	if (loop == NULL) {
+		loop = g_main_new(FALSE);
+	}
+}
+
+void b_main_run()
+{
+	g_main_run(loop);
+}
+
+static gboolean gaim_io_invoke(GIOChannel *source, GIOCondition condition, gpointer data)
+{
+	GaimIOClosure *closure = data;
+	b_input_condition gaim_cond = 0;
+	gboolean st;
+
+	if (condition & G_IO_NVAL) {
+		return FALSE;
+	}
+
+	if (condition & GAIM_READ_COND) {
+		gaim_cond |= B_EV_IO_READ;
+	}
+	if (condition & GAIM_WRITE_COND) {
+		gaim_cond |= B_EV_IO_WRITE;
+	}
+
+	event_debug("gaim_io_invoke( %d, %d, %p )\n", g_io_channel_unix_get_fd(source), condition, data);
+
+	st = closure->function(closure->data, g_io_channel_unix_get_fd(source), gaim_cond);
+
+	if (!st) {
+		event_debug("Returned FALSE, cancelling.\n");
+	}
+
+	if (closure->flags & B_EV_FLAG_FORCE_ONCE) {
+		return FALSE;
+	} else if (closure->flags & B_EV_FLAG_FORCE_REPEAT) {
+		return TRUE;
+	} else {
+		return st;
+	}
+}
+
+static void gaim_io_destroy(gpointer data)
+{
+	event_debug("gaim_io_destroy( 0%p )\n", data);
+	g_free(data);
+}
 
 gint b_input_add(gint source, b_input_condition condition, b_event_handler function, gpointer data)
 {
@@ -44,4 +133,13 @@ gint b_timeout_add(gint timeout, b_event_handler func, gpointer data)
 	event_debug("b_timeout_add( %d, %p, %p ) = %d\n", timeout, func, data, st);
 
 	return st;
+}
+
+void b_event_remove(gint tag)
+{
+	log_message(LOGLVL_INFO, "b_event_remove( %d )\n", tag);
+
+	if (tag > 0) {
+		g_source_remove(tag);
+	}
 }

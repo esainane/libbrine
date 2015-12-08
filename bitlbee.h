@@ -32,8 +32,6 @@
 #define BITLBEE_VER(a, b, c) (((a) << 16) + ((b) << 8) + (c))
 #define BITLBEE_VERSION_CODE BITLBEE_VER(3, 4, 1)
 
-#define event_debug(x ...)
-
 
 #define sock_make_nonblocking(fd) fcntl(fd, F_SETFL, O_NONBLOCK)
 #define sock_make_blocking(fd) fcntl(fd, F_SETFL, 0)
@@ -79,7 +77,6 @@ typedef struct account account_qt;
 struct set;
 struct http_request;
 
-typedef char *(*set_eval) (struct set *set, char *value);
 typedef void (*query_callback) (void *data);
 
 #include "events.h"

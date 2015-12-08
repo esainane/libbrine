@@ -36,6 +36,68 @@ static gboolean http_ssl_connected(gpointer data, int returncode, void *source, 
 static gboolean http_incoming_data(gpointer data, int source, b_input_condition cond);
 static void http_free(struct http_request *req);
 
+
+char *get_rfc822_header(const char *text, const char *header, int len)
+{
+	int hlen = strlen(header), i;
+	const char *ret;
+
+	if (text == NULL) {
+		return NULL;
+	}
+
+	if (len == 0) {
+		len = strlen(text);
+	}
+
+	i = 0;
+	while ((i + hlen) < len) {
+		/* Maybe this is a bit over-commented, but I just hate this part... */
+		if (g_strncasecmp(text + i, header, hlen) == 0) {
+			/* Skip to the (probable) end of the header */
+			i += hlen;
+
+			/* Find the first non-[: \t] character */
+			while (i < len && (text[i] == ':' || text[i] == ' ' || text[i] == '\t')) {
+				i++;
+			}
+
+			/* Make sure we're still inside the string */
+			if (i >= len) {
+				return(NULL);
+			}
+
+			/* Save the position */
+			ret = text + i;
+
+			/* Search for the end of this line */
+			while (i < len && text[i] != '\r' && text[i] != '\n') {
+				i++;
+			}
+
+			/* Copy the found data */
+			return(g_strndup(ret, text + i - ret));
+		}
+
+		/* This wasn't the header we were looking for, skip to the next line. */
+		while (i < len && (text[i] != '\r' && text[i] != '\n')) {
+			i++;
+		}
+		while (i < len && (text[i] == '\r' || text[i] == '\n')) {
+			i++;
+		}
+
+		/* End of headers? */
+		if ((i >= 4 && strncmp(text + i - 4, "\r\n\r\n", 4) == 0) ||
+		    (i >= 2 && (strncmp(text + i - 2, "\n\n", 2) == 0 ||
+		                strncmp(text + i - 2, "\r\r", 2) == 0))) {
+			break;
+		}
+	}
+
+	return NULL;
+}
+
 /* Warning: This one explodes the string. Worst-cases can make the string 3x its original size! */
 /* This function is safe, but make sure you call it safely as well! */
 void http_encode(char *s)

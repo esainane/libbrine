@@ -9,7 +9,7 @@ gboolean load_plugin(char *path)
 {
 	void (*init_function) (void);
 
-  log_message(LOGLVL_INFO, "Attempting to load plugin `%s'...\n", path);
+  log_message(LOGLVL_INFO, "Attempting to load plugin `%s'...", path);
 
 	GModule *mod = g_module_open(path, G_MODULE_BIND_LAZY);
 
@@ -42,11 +42,13 @@ void load_plugins(void)
 		while ((entry = g_dir_read_name(dir))) {
 			path = g_build_filename(PLUGINDIR, entry, NULL);
 			if (!path) {
-				log_message(LOGLVL_WARNING, "Can't build path for %s\n", entry);
+				log_message(LOGLVL_ERROR, "Can't build path for %s\n", entry);
 				continue;
 			}
 
-			load_plugin(path);
+			if (load_plugin(path)) {
+        log_message(LOGLVL_INFO, "Plugin loaded\n");
+      }
 
 			g_free(path);
 		}
@@ -55,18 +57,19 @@ void load_plugins(void)
 	}
 }
 
-struct prpl *steam;
+struct prpl *target;
 
+#define TARGET "skype"
 
 void register_protocol(struct prpl *plugin) {
-    log_message(LOGLVL_INFO, "Received plugin for `%s'.\n", plugin->name);
-    if (!strncmp(plugin->name, "steam", sizeof("steam"))) {
-      steam = plugin;
+    log_message(LOGLVL_INFO, "Received plugin for `%s'.", plugin->name);
+    if (!strncmp(plugin->name, TARGET, sizeof(TARGET))) {
+      target = plugin;
     }
 }
 
 gboolean root_command_add(const char *name, int params, void (*f)(irc_t *, char **args), int flags) {
-    log_message(LOGLVL_INFO, "Plugin wants to register root command `%s'.\n", name);
+    log_message(LOGLVL_INFO, "Plugin wants to register root command `%s'.", name);
 }
 
 struct im_connection *imcb_new(account_t *acc) {
@@ -81,6 +84,9 @@ struct im_connection *imcb_new(account_t *acc) {
 	return(ic);
 }
 
+#define STR(x) #x
+#define XSTR(x) STR(x)
+
 int main(void) {
   // log_link(LOGLVL_ERROR, LOGOUTPUT_CONSOLE);
   // log_link(LOGLVL_WARNING, LOGOUTPUT_CONSOLE);
@@ -90,9 +96,9 @@ int main(void) {
   log_message(LOGLVL_INFO, "Done (no username or password provided for testing)\n");
 #else
   account_t account = {
-    .prpl = steam,
-    .user = #USERNAME,
-    .pass = #PASSWORD,
+    .prpl = target,
+    .user = XSTR(USERNAME),
+    .pass = XSTR(PASSWORD),
     .tag = "STM",
     .reconnect = 0,
     .set = 0,
@@ -101,8 +107,14 @@ int main(void) {
     .next = 0
   };
 
-  log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", steam->name);
-  steam->login(&account);
+  log_message(LOGLVL_INFO, "Setting up event handler...");
+  b_main_init();
+  log_message(LOGLVL_INFO, "Initializing %s...\n", target->name);
+  target->init(&account);
+  log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", target->name);
+  target->login(&account);
+  log_message(LOGLVL_INFO, "Starting event loop!");
+  b_main_run();
 #endif
 
   return 0;

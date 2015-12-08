@@ -120,7 +120,7 @@ static gboolean proxy_connected(gpointer data, gint source, b_input_condition co
 		phb->proxy_func(phb->proxy_data, source, B_EV_IO_READ);
 	} else {
 		phb->func(phb->data, source, B_EV_IO_READ);
-		phb_free(phb, TRUE);
+		// phb_free(phb, TRUE);
 	}
 
 	return FALSE;
