@@ -1,21 +1,34 @@
 
 # Yet another quick hack :^o)
 
-SOURCES=$(shell ls *.c | grep -v brine.c)
+SOURCES=$(wildcard *.c)
 OBJS := $(SOURCES:.c=.o)
+LIB_NAME=brine
+LIB_TARGET=lib$(LIB_NAME).so
+TEST_TARGET=test
 
-all: libbrine.so test
+CC=gcc
+CFLAGS=-g -O2 -fno-strict-aliasing
+# FIXME: Worst remnant of the quick hack, try pkg-config
+LIBFLAGS=-fPIC -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lm -lssl -lcrypto -lglib-2.0 -lgmodule-2.0
 
-test: libbrine.so
-	gcc -g -O2 -fno-strict-aliasing -L. -lbrine main.c -o test
+all: $(LIB_TARGET) $(TEST_TARGET)
 
-libbrine.so: $(OBJS) *.c *.h
-	gcc -g -O2 -fno-strict-aliasing -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lm -lssl -lcrypto -lglib-2.0 -lgmodule-2.0 -fPIC $(OBJS) brine.c -shared -o libbrine.so
+$(TEST_TARGET): $(LIB_TARGET)
+	$(CC) $(CFLAGS) $(LIBFLAGS) -L. -l$(LIB_NAME) main.c -o test
+
+$(LIB_TARGET): $(OBJS) *.c *.h
+	$(CC) $(CFLAGS) $(LIBFLAGS) $(OBJS) -Wl,-soname,$(LIB_TARGET) -shared -o $(LIB_TARGET)
 
 %.o: %.c
-	gcc -g -O2 -fno-strict-aliasing -fPIC -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lglib-2.0 -MMD -MP -MT $@ -c $<
+	$(CC) $(CFLAGS) $(LIBFLAGS) -MMD -MP -MT $@ -c $<
 
 clean:
-	rm -f *.o libbrine.so *.d
+	rm -f *.o  *.d $(LIB_TARGET) $(TEST_TARGET)
 
+# Presumption - if a .o is already built, there is a suitably up to date .d file with it.
+# Still may need to run make twice in some degenerate cases where you move headers around
 -include $(OBJS:.o=.d)
+
+run: all
+	LD_LIBRARY_PATH=. ./$(TEST_TARGET)

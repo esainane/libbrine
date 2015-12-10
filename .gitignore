@@ -2,3 +2,4 @@
 *.d
 *~
 libbrine.so
+test
