@@ -191,7 +191,7 @@ void imcb_chat_free(struct groupchat *c) {
 	log_message(LOGLVL_INFO, "Want to free groupchat (%p)", c);
 }
 void imcb_chat_msg(struct groupchat *c, const char *who, char *msg, guint32 flags, time_t sent_at) {
-		log_message(LOGLVL_INFO, "Want to send message (%s) from (%s) to groupchat (%p) with flags (%u)", msg, who, c);
+	log_message(LOGLVL_INFO, "Want to send message (%s) from (%s) to groupchat (%p) with flags (%u)", msg, who, c);
 }
 void imcb_chat_name_hint(struct groupchat *c, const char *name) {
 	log_message(LOGLVL_INFO, "Want to set chat name hint for (%p) to (%s)", name);
@@ -218,12 +218,9 @@ struct groupchat *bee_chat_by_title(bee_t *bee, struct im_connection *ic, const 
 
 void brine_init(struct brine *b) {
 	brine_callbacks = b;
-  // log_link(LOGLVL_ERROR, LOGOUTPUT_CONSOLE);
-  // log_link(LOGLVL_WARNING, LOGOUTPUT_CONSOLE);
-  // log_link(LOGLVL_INFO, LOGOUTPUT_CONSOLE);
-  load_plugins();
-  log_message(LOGLVL_INFO, "Setting up event handler...");
-  b_main_init();
+	load_plugins();
+	log_message(LOGLVL_INFO, "Setting up event handler...");
+	b_main_init();
 }
 
 void brine_bootstrap(const char *protocol, char *username, char *password, void (* config_callback)(struct set **)) {
@@ -231,31 +228,29 @@ void brine_bootstrap(const char *protocol, char *username, char *password, void 
 	if (!target) {
 		log_message(LOGLVL_ERROR, "No plugin found for (%s), cannot bootstrap!", protocol);
 	}
-  account_t account = {
-    .prpl = target,
-    .user = username,
-    .pass = password,
-    .tag = "STM",
-    .reconnect = 0,
-    .set = 0,
-    .bee = 0,
-    .ic = 0,
-    .next = 0
-  };
+	account_t account = {
+		.prpl = target,
+		.user = username,
+		.pass = password,
+		.tag = "STM",
+		.reconnect = 0,
+		.set = 0,
+		.bee = 0,
+		.ic = 0,
+		.next = 0
+	};
 
-  log_message(LOGLVL_INFO, "Initializing %s...\n", target->name);
-  target->init(&account);
+	log_message(LOGLVL_INFO, "Initializing %s...\n", target->name);
+	target->init(&account);
 	if (config_callback) {
 		config_callback(&account.set);
 	}
-  set_setstr(&account.set, "skypeconsole_receive", "true");
-  set_setstr(&account.set, "read_groups", "true");
-  log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", target->name);
-  target->login(&account);
+	log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", target->name);
+	target->login(&account);
 	brine_eventloop();
 }
 
 void brine_eventloop(void) {
-  log_message(LOGLVL_INFO, "Starting event loop!");
-  b_main_run();
+	log_message(LOGLVL_INFO, "Starting event loop!");
+	b_main_run();
 }
