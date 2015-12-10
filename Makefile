@@ -15,7 +15,7 @@ LIBFLAGS=-fPIC -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/incl
 all: $(LIB_TARGET) $(TEST_TARGET)
 
 $(TEST_TARGET): $(LIB_TARGET)
-	$(CC) $(CFLAGS) $(LIBFLAGS) -L. -l$(LIB_NAME) main.c -o test
+	$(CC) $(CFLAGS) $(LIBFLAGS) -L. -l$(LIB_NAME) test.c -o test
 
 $(LIB_TARGET): $(OBJS) *.c *.h
 	$(CC) $(CFLAGS) $(LIBFLAGS) $(OBJS) -Wl,-soname,$(LIB_TARGET) -shared -o $(LIB_TARGET)
