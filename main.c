@@ -71,6 +71,55 @@ void register_protocol(struct prpl *plugin) {
 gboolean root_command_add(const char *name, int params, void (*f)(irc_t *, char **args), int flags) {
     log_message(LOGLVL_INFO, "Plugin wants to register root command `%s'.", name);
 }
+#if 0
+typedef enum {
+	ACC_FLAG_AWAY_MESSAGE = 0x01,   /* Supports away messages instead of just states. */
+	ACC_FLAG_STATUS_MESSAGE = 0x02, /* Supports status messages (without being away). */
+	ACC_FLAG_HANDLE_DOMAINS = 0x04, /* Contact handles need a domain portion. */
+	ACC_FLAG_LOCAL = 0x08,          /* Contact list is local. */
+} account_flag_t;
+#endif
+void imcb_connected(struct im_connection *ic)
+{
+	/* MSN servers sometimes redirect you to a different server and do
+	   the whole login sequence again, so these "late" calls to this
+	   function should be handled correctly. (IOW, ignored) */
+	if (ic->flags & OPT_LOGGED_IN) {
+		return;
+	}
+
+#if 0
+	if (ic->acc->flags & ACC_FLAG_LOCAL) {
+		GHashTableIter nicks;
+		gpointer k, v;
+		g_hash_table_iter_init(&nicks, ic->acc->nicks);
+		while (g_hash_table_iter_next(&nicks, &k, &v)) {
+			ic->acc->prpl->add_buddy(ic, (char *) k, NULL);
+		}
+	}
+#endif
+
+	imcb_log(ic, "Logged in");
+
+	ic->flags |= OPT_LOGGED_IN;
+#if 0
+	start_keepalives(ic, 60000);
+	/* Necessary to send initial presence status, even if we're not away. */
+	imc_away_send_update(ic);
+#endif
+
+#if 0
+	/* Apparently we're connected successfully, so reset the
+	   exponential backoff timer. */
+	ic->acc->auto_reconnect_delay = 0;
+#endif
+
+#if 0
+	if (ic->bee->ui->imc_connected) {
+		ic->bee->ui->imc_connected(ic);
+	}
+#endif
+}
 
 struct im_connection *imcb_new(account_t *acc) {
   struct im_connection *ic;
@@ -82,6 +131,35 @@ struct im_connection *imcb_new(account_t *acc) {
 	acc->ic = ic;
 
 	return(ic);
+}
+
+void imcb_chat_add_buddy(struct groupchat *c, const char *handle) {
+	log_message(LOGLVL_INFO, "Want to add (%s) to groupchat (%p)", handle, c);
+}
+void imcb_chat_free(struct groupchat *c) {
+	log_message(LOGLVL_INFO, "Want to free groupchat (%p)", c);
+}
+void imcb_chat_msg(struct groupchat *c, const char *who, char *msg, guint32 flags, time_t sent_at) {
+		log_message(LOGLVL_INFO, "Want to send message (%s) from (%s) to groupchat (%p) with flags (%u)", msg, who, c);
+}
+void imcb_chat_name_hint(struct groupchat *c, const char *name) {
+	log_message(LOGLVL_INFO, "Want to set chat name hint for (%p) to (%s)", name);
+}
+
+struct groupchat *bee_chat_by_title(bee_t *bee, struct im_connection *ic, const char *title)
+{
+	log_message(LOGLVL_INFO, "Attempting to look up chat by the title (%s)", title);
+	struct groupchat *c;
+	GSList *l;
+
+	for (l = ic->groupchats; l; l = l->next) {
+		c = l->data;
+		if (strcmp(c->title, title) == 0) {
+			return c;
+		}
+	}
+
+	return NULL;
 }
 
 #define STR(x) #x
@@ -111,6 +189,8 @@ int main(void) {
   b_main_init();
   log_message(LOGLVL_INFO, "Initializing %s...\n", target->name);
   target->init(&account);
+  set_setstr(&account.set, "skypeconsole_receive", "true");
+  set_setstr(&account.set, "read_groups", "true");
   log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", target->name);
   target->login(&account);
   log_message(LOGLVL_INFO, "Starting event loop!");
