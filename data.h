@@ -36,6 +36,7 @@ typedef struct account {
 } account_t;
 
 struct im_connection {
+	GSList *users;  /* struct bee_user */
 	account_t *acc;
   uint32_t flags;
 	void *proto_data;
@@ -85,6 +86,7 @@ struct groupchat {
 	struct im_connection *ic;
 	GList *in_room;
 	char *title;
+	char *topic;
 	void *data;
 	void *ui_data;
 };
@@ -219,15 +221,6 @@ struct prpl {
         void *resv4;
         void *resv5;
 };
-
-typedef struct url {
-  int proto;
-  int port;
-  char host[MAX_STRING + 1];
-  char file[MAX_STRING + 1];
-  char user[MAX_STRING + 1];
-  char pass[MAX_STRING + 1];
-} url_t;
 
 typedef enum http_client_flags {
 	HTTPC_STREAMING = 1,

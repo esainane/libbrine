@@ -190,6 +190,35 @@ struct im_connection *imcb_new(account_t *acc) {
 	return(ic);
 }
 
+
+
+struct groupchat *imcb_chat_new(struct im_connection *ic, const char *handle)
+{
+	struct groupchat *c = g_new0(struct groupchat, 1);
+	bee_t *bee = ic->bee;
+
+	/* This one just creates the conversation structure, user won't see
+	   anything yet until s/he is joined to the conversation. (This
+	   allows you to add other already present participants first.) */
+
+	ic->groupchats = g_slist_prepend(ic->groupchats, c);
+	c->ic = ic;
+	c->title = g_strdup(handle);
+	c->topic = g_strdup_printf(
+	        "BitlBee groupchat: \"%s\". Please keep in mind that root-commands won't work here. Have fun!",
+	        c->title);
+
+	if (set_getbool(&ic->bee->set, "debug")) {
+		imcb_log(ic, "Creating new conversation: (id=%p,handle=%s)", c, handle);
+	}
+#if 0
+	if (bee->ui->chat_new) {
+		bee->ui->chat_new(bee, c);
+	}
+#endif
+
+	return c;
+}
 void imcb_chat_add_buddy(struct groupchat *c, const char *handle) {
 	log_message(LOGLVL_INFO, "Want to add (%s) to groupchat (%p)", handle, c);
 }
@@ -219,8 +248,47 @@ struct groupchat *bee_chat_by_title(bee_t *bee, struct im_connection *ic, const 
 	return NULL;
 }
 
-#define STR(x) #x
-#define XSTR(x) STR(x)
+void imcb_add_buddy(struct im_connection *ic, const char *handle, const char *group) {
+	bee_user_t *bu;
+	log_message(LOGLVL_INFO, "Want to add buddy (%s)", handle);
+
+	if (imcb_buddy_by_handle(ic, handle)) {
+		log_message(LOGLVL_ERROR, "Attempted to create already existing user (%s)!", handle);
+		return;
+	}
+
+	bu = g_new0(bee_user_t, 1);
+	bu->ic = ic;
+	bu->handle = g_strdup(handle);
+	ic->users = g_slist_prepend(ic->users, bu);
+	if (ic->acc->prpl->buddy_data_add) {
+		ic->acc->prpl->buddy_data_add(bu);
+	}
+	imcb_buddy_status(ic, handle, 0, NULL, NULL);
+}
+void imcb_remove_buddy(struct im_connection *ic, const char *handle, char *group) {
+	log_message(LOGLVL_INFO, "Want to remove (%s)", handle);
+}
+void imcb_rename_buddy(struct im_connection *ic, const char *handle, const char *realname) {
+	log_message(LOGLVL_INFO, "Want to rename buddy (%s) to (%s)", handle, realname);
+}
+void imcb_buddy_nick_hint(struct im_connection *ic, const char *handle, const char *nick) {
+	log_message(LOGLVL_INFO, "Want to set buddy (%s) nick hint to (%s)", handle, nick);
+}
+struct bee_user *imcb_buddy_by_handle(struct im_connection *ic, const char *handle) {
+	log_message(LOGLVL_INFO, "Attempting to look up buddy by the handle (%s)", handle);
+	GSList *l;
+
+	for (l = ic->users; l; l = l->next) {
+		bee_user_t *bu = l->data;
+
+		if (ic->acc->prpl->handle_cmp(bu->handle, handle) == 0) {
+			return bu;
+		}
+	}
+
+	return NULL;
+}
 
 void brine_init(struct brine *b) {
 	brine_callbacks = b;

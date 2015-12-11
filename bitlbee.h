@@ -126,6 +126,7 @@ typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
 #include "http_client.h"
 #include "set.h"
+#include "sha1.h"
 
 #include "data.h"
 
