@@ -94,7 +94,10 @@ void imcb_log(struct im_connection *ic, char *fmt, ...)
 	va_list params;
 	char *text;
 
+	va_start(params, fmt);
 	text = g_strdup_vprintf(fmt, params);
+	va_end(params);
+
 	if (brine_callbacks && brine_callbacks->net_msgrecv) {
 		brine_callbacks->net_msgrecv(0, 0, text, 300);
 	} else {
@@ -108,7 +111,10 @@ void imcb_error(struct im_connection *ic, char *fmt, ...)
 	va_list params;
 	char *text;
 
+	va_start(params, fmt);
 	text = g_strdup_vprintf(fmt, params);
+	va_end(params);
+
 	if (brine_callbacks && brine_callbacks->net_msgrecv) {
 		brine_callbacks->net_msgrecv(0, 0, text, 400);
 	} else {
