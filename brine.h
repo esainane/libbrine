@@ -2,6 +2,10 @@
  * Brine library callbacks
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define USRCMD const void *brineuser
 #define NETCMD USRCMD, const void *network
 #define MSGCMD NETCMD, const char *message
@@ -31,3 +35,7 @@ void brine_bootstrap(const char *protocol, char *username, char *password, void 
 
 // Will never return!
 void brine_eventloop(void);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
