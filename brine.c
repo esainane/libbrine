@@ -302,6 +302,12 @@ void brine_bootstrap(const char *protocol, char *username, char *password, void 
 	if (!target) {
 		log_message(LOGLVL_ERROR, "No plugin found for (%s), cannot bootstrap!", protocol);
 	}
+	bee_t bee = {
+		.set = 0,
+		.users = 0,
+		.accounts = 0,
+		.ui_data = 0
+	};
 	account_t account = {
 		.prpl = target,
 		.user = username,
@@ -309,7 +315,7 @@ void brine_bootstrap(const char *protocol, char *username, char *password, void 
 		.tag = "STM",
 		.reconnect = 0,
 		.set = 0,
-		.bee = 0,
+		.bee = &bee,
 		.ic = 0,
 		.next = 0
 	};
