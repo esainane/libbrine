@@ -1,0 +1,10 @@
+prefix=/usr/local
+includedir=${prefix}/include/libbrine/api
+plugindir=${prefix}/lib/libbrine/plugins
+
+Name: libbrine-api
+Description: Bitlbee compatibility layer (plugin API)
+Requires: glib-2.0
+Version: 0.0.1
+Libs:
+Cflags: -I${includedir}

@@ -1,0 +1,10 @@
+prefix=/usr/local
+includedir=${prefix}/include/libbrine
+libdir=${prefix}/lib/libbrine
+
+Name: libbrine
+Description: Bitlbee compatibility layer (library)
+Requires: glib-2.0
+Version: 0.0.1
+Libs: -lbrine
+Cflags: -I${includedir}
