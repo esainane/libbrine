@@ -301,6 +301,7 @@ void brine_bootstrap(const char *protocol, char *username, char *password, void 
 	struct prpl *target = find_protocol(protocol);
 	if (!target) {
 		log_message(LOGLVL_ERROR, "No plugin found for (%s), cannot bootstrap!", protocol);
+		return;
 	}
 	bee_t bee = {
 		.set = 0,
