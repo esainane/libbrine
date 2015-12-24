@@ -29,10 +29,14 @@ void brine_init(struct brine *);
 // Invokes brine_eventloop, will never return!
 void brine_bootstrap(const char *protocol, char *username, char *password, void (* config_callback)(struct set **));
 
-const void *brine_connect(const char *protocol, const char *username, const char *password, void (*config_callback)(struct set **));
+void *brine_connect(const char *protocol, const char *username, const char *password, void (*config_callback)(struct set **));
+
+void brine_disconnect(void *connection);
 
 // Will never return!
 void brine_eventloop(void);
+
+int brine_pluginexists(const char *);
 
 #ifdef __cplusplus
 } /* extern "C" */

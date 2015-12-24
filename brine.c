@@ -85,7 +85,10 @@ static struct prpl *find_protocol(const char *name)
 	return NULL;
 }
 
-
+int brine_pluginexists(const char *name)
+{
+	return find_protocol(name) != NULL;
+}
 
 void imcb_log(struct im_connection *ic, char *fmt, ...)
 {
@@ -187,8 +190,6 @@ struct im_connection *imcb_new(account_t *acc) {
 
 	return(ic);
 }
-
-
 
 struct groupchat *imcb_chat_new(struct im_connection *ic, const char *handle)
 {
@@ -293,6 +294,62 @@ void brine_init(struct brine *b) {
 	load_plugins();
 	log_message(LOGLVL_INFO, "Setting up event handler...");
 	b_main_init();
+}
+
+void *brine_connect(const char *protocol, const char *username, const char *password, void (* config_callback)(struct set **)) {
+	/* Isolate things a bit more. We create an entirely new bee for each new brine connection. */
+	struct prpl *target = find_protocol(protocol);
+	if (!target) {
+		log_message(LOGLVL_ERROR, "No plugin found for (%s), cannot bootstrap!", protocol);
+		return;
+	}
+	bee_t *bee = g_new0(struct bee, 1);
+	account_t *account = g_new0(struct account, 1);
+	account->prpl = target;
+	account->user = g_strdup(username);
+	account->pass = g_strdup(password);
+	account->tag = "";
+	account->bee = bee;
+	bee->accounts = account;
+
+	log_message(LOGLVL_INFO, "Initializing %s...\n", target->name);
+	target->init(account);
+	if (config_callback) {
+		config_callback(&account->set);
+	}
+	log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", target->name);
+	target->login(account);
+	return account;
+}
+
+void brine_disconnect(void *connection) {
+	struct account *acc = connection;
+	struct im_connection *ic = acc->ic;
+	GSList *l;
+	log_message(LOGLVL_INFO, "Logging out and cleaning up of %s (%s)...\n", ic->acc->user, ic->acc->prpl->name);
+	for (l = ic->bee->users; l; ) {
+		bee_user_t *bu = l->data;
+		l = l->next;
+		if (!bu) {
+			continue;
+		} else if (bu->ic == ic) {
+			if (ic->acc->prpl->buddy_data_free) {
+				ic->acc->prpl->buddy_data_free(bu);
+			}
+			ic->bee->users = g_slist_remove(ic->bee->users, bu);
+			g_free(bu->handle);
+			g_free(bu->status_msg);
+			g_free(bu);
+		} else {
+			log_message(LOGLVL_ERROR, "Had bee user with different connection during cleanup, this should never happen!");
+		}
+	}
+	ic->acc->prpl->logout(ic);
+	g_free(ic->acc->user);
+	g_free(ic->acc->pass);
+	g_free(ic->acc);
+	g_free(ic->bee);
+	g_free(ic);
 }
 
 void brine_bootstrap(const char *protocol, char *username, char *password, void (* config_callback)(struct set **)) {
