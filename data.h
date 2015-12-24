@@ -36,7 +36,6 @@ typedef struct account {
 } account_t;
 
 struct im_connection {
-	GSList *users;  /* struct bee_user */
 	account_t *acc;
   uint32_t flags;
 	void *proto_data;

@@ -260,7 +260,7 @@ void imcb_add_buddy(struct im_connection *ic, const char *handle, const char *gr
 	bu = g_new0(bee_user_t, 1);
 	bu->ic = ic;
 	bu->handle = g_strdup(handle);
-	ic->users = g_slist_prepend(ic->users, bu);
+	ic->bee->users = g_slist_prepend(ic->bee->users, bu);
 	if (ic->acc->prpl->buddy_data_add) {
 		ic->acc->prpl->buddy_data_add(bu);
 	}
@@ -279,7 +279,7 @@ struct bee_user *imcb_buddy_by_handle(struct im_connection *ic, const char *hand
 	log_message(LOGLVL_INFO, "Attempting to look up buddy by the handle (%s)", handle);
 	GSList *l;
 
-	for (l = ic->users; l; l = l->next) {
+	for (l = ic->bee->users; l; l = l->next) {
 		bee_user_t *bu = l->data;
 
 		if (ic->acc->prpl->handle_cmp(bu->handle, handle) == 0) {
@@ -305,7 +305,6 @@ void brine_bootstrap(const char *protocol, char *username, char *password, void 
 	}
 	bee_t bee = {
 		.set = 0,
-		.users = 0,
 		.accounts = 0,
 		.ui_data = 0
 	};
