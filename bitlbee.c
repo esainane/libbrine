@@ -1,7 +1,7 @@
 #include "bitlbee.h"
 
 #define MOCK(x, args...) x(args) { \
-  printf(#x " is not yet implemented!\n");\
+  fprintf(stderr, #x " is not yet implemented!\n");\
 }
 #define MOCKVA MOCK
 

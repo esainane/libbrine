@@ -14,11 +14,11 @@ static void log_console(int level, const char *message)
 		fprintf(stderr, "Warning: %s\n", message);
 	}
 	if (level == LOGLVL_INFO) {
-		fprintf(stdout, "Informational: %s\n", message);
+		fprintf(stderr, "Informational: %s\n", message);
 	}
 #ifdef DEBUG
 	if (level == LOGLVL_DEBUG) {
-		fprintf(stdout, "Debug: %s\n", message);
+		fprintf(stderr, "Debug: %s\n", message);
 	}
 #endif
 // 	/* Always log stuff in syslogs too. */
