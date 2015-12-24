@@ -99,7 +99,7 @@ void imcb_log(struct im_connection *ic, char *fmt, ...)
 	va_end(params);
 
 	if (brine_callbacks && brine_callbacks->net_msgrecv) {
-		brine_callbacks->net_msgrecv(0, 0, text, 300);
+		brine_callbacks->net_msgrecv(ic, text, 300);
 	} else {
   	log_message(LOGLVL_INFO, "** %s > %s", ic->acc->prpl->name, text);
 	}
@@ -116,7 +116,7 @@ void imcb_error(struct im_connection *ic, char *fmt, ...)
 	va_end(params);
 
 	if (brine_callbacks && brine_callbacks->net_msgrecv) {
-		brine_callbacks->net_msgrecv(0, 0, text, 400);
+		brine_callbacks->net_msgrecv(ic, text, 400);
 	} else {
   	log_message(LOGLVL_ERROR, "** %s > %s", ic->acc->prpl->name, text);
 	}

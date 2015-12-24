@@ -23,11 +23,8 @@ static void config(struct set **set) {
 int main(int argc, char **argv) {
   struct brine b = {
     .net_msgrecv = 0,
-    .net_msgsend = 0,
     .user_msgrecv = 0,
-    .user_msgsend = 0,
-    .chan_msgrecv = 0,
-    .chan_msgsend = 0
+    .chan_msgrecv = 0
   };
   int i = 0;
 
