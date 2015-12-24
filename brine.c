@@ -63,8 +63,6 @@ static struct prpl **plugins = 0;
 static plugins_num = 0;
 static plugins_max = 0;
 
-#define TARGET "skype"
-
 static struct brine *brine_callbacks;
 
 void register_protocol(struct prpl *plugin)
