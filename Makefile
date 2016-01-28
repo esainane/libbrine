@@ -16,18 +16,19 @@ API_INCLUDE_DIR=$(INCLUDE_DIR)/api
 
 INSTALL=install -p
 
-CC=gcc
-CFLAGS=-g -O2 -fno-strict-aliasing
+CC=clang
+CFLAGS=-g -O2 -fno-strict-aliasing -Wno-deprecated-declarations
 # FIXME: Worst remnant of the quick hack, try pkg-config
-LIBFLAGS=-fPIC -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -lm -lssl -lcrypto -lglib-2.0 -lgmodule-2.0
+LIBFLAGS=-fPIC -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include
+LFLAGS=-lm -lssl -lcrypto -lglib-2.0 -lgmodule-2.0
 
 all: $(LIB_TARGET) $(TEST_TARGET)
 
 $(TEST_TARGET): $(LIB_TARGET)
-	$(CC) $(CFLAGS) $(LIBFLAGS) -L. -l$(LIB_NAME) test.c -o test
+	$(CC) $(CFLAGS) $(LIBFLAGS) $(LFLAGS) -L. -l$(LIB_NAME) test.c -o test
 
 $(LIB_TARGET): $(OBJS) *.c *.h
-	$(CC) $(CFLAGS) $(LIBFLAGS) $(OBJS) -Wl,-soname,$(LIB_TARGET) -shared -o $(LIB_TARGET)
+	$(CC) $(CFLAGS) $(LIBFLAGS) $(LFLAGS) $(OBJS) -Wl,-soname,$(LIB_TARGET) -shared -o $(LIB_TARGET)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(LIBFLAGS) -MMD -MP -MT $@ -c $<
