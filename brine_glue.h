@@ -1,10 +1,13 @@
 
+struct account;
+struct irc;
+struct bee;
 void register_protocol(struct prpl *plugin);
-gboolean root_command_add(const char *name, int params, void (*f)(irc_t *, char **args), int flags);
+gboolean root_command_add(const char *name, int params, void (*f)(struct irc *, char **args), int flags);
 void imcb_connected(struct im_connection *ic);
-struct im_connection *imcb_new(account_t *acc);
+struct im_connection *imcb_new(struct account *acc);
 
-struct groupchat *bee_chat_by_title(bee_t *bee, struct im_connection *ic, const char *title);
+struct groupchat *bee_chat_by_title(struct bee *bee, struct im_connection *ic, const char *title);
 
 struct groupchat *imcb_chat_new(struct im_connection *ic, const char *handle);
 void imcb_chat_add_buddy(struct groupchat *c, const char *handle);

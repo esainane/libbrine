@@ -13,17 +13,16 @@ typedef enum {
 } set_flags_t;
 
 struct set;
-typedef struct set set_t;
 
 typedef char *(*set_eval) (void *data, char *value);
 
-void set_add(set_t **head, const char *key, const char *def, set_eval eval, void *data);
-void set_add_with_flags(set_t **head, const char *key, const char *def, set_eval eval, void *data, set_flags_t flags);
-char *set_getstr(set_t **head, const char *key);
-int set_getint(set_t **head, const char *key);
-int set_getbool(set_t **head, const char *key);
+void set_add(struct set **head, const char *key, const char *def, set_eval eval, void *data);
+void set_add_with_flags(struct set **head, const char *key, const char *def, set_eval eval, void *data, set_flags_t flags);
+char *set_getstr(struct set **head, const char *key);
+int set_getint(struct set **head, const char *key);
+int set_getbool(struct set **head, const char *key);
 int bool2int(char *value);
-int set_setstr(set_t **head, const char *key, char *value);
+int set_setstr(struct set **head, const char *key, char *value);
 
 /* Two very useful generic evaluators. */
 char *set_eval_int(void *data, char *value);

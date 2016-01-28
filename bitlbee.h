@@ -64,16 +64,6 @@ extern int ssl_errno;
 
 
 struct prpl;
-typedef enum {
-        BEE_USER_ONLINE = 1,    /* Compatibility with old OPT_LOGGED_IN flag */
-        BEE_USER_AWAY = 4,      /* Compatibility with old OPT_AWAY flag */
-        BEE_USER_MOBILE = 8,    /* Compatibility with old OPT_MOBILE flag */
-        BEE_USER_LOCAL = 256,   /* Locally-added contacts (not in real contact list) */
-        BEE_USER_SPECIAL = 512, /* Denotes a user as being special */
-        BEE_USER_NOOTR = 4096,  /* Per-user version of OPT_NOOTR */
-} bee_user_flags_t;
-typedef struct bee_user bee_user_t;
-typedef struct account account_qt;
 struct set;
 struct http_request;
 
@@ -118,17 +108,13 @@ typedef enum {
 	IRC_CHANNEL_CHAT_PICKME = 0x10000,
 } irc_channel_flags_t;
 
-typedef struct irc irc_t;
-typedef struct url url_t;
-
-typedef GChecksum *sha1_state_t;
 typedef gboolean (*ssl_input_function)(gpointer, int, void*, b_input_condition);
 
 #include "http_client.h"
 #include "set.h"
 #include "sha1.h"
 
-#include "data.h"
+#include "data_glue.h"
 
 #include "brine_glue.h"
 

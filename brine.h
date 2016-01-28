@@ -38,6 +38,10 @@ void brine_eventloop(void);
 
 int brine_pluginexists(const char *);
 
+/* WORKAROUND */
+struct set;
+int set_setstr(struct set **head, const char *key, char *value);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
