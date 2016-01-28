@@ -1,3 +1,5 @@
+#ifndef DATA_H
+#define DATA_H
 
 
 typedef struct file_transfer {} file_transfer_t;
@@ -44,6 +46,7 @@ struct im_connection {
 	GSList *groupchats;
 };
 
+#endif /* DATA_H */
 typedef struct bee_user {
   struct im_connection *ic;
 	char *handle;

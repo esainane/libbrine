@@ -1,4 +1,6 @@
 
+#ifndef SET_H
+#define SET_H
 
 extern char *SET_INVALID;
 
@@ -26,3 +28,5 @@ int set_setstr(set_t **head, const char *key, char *value);
 /* Two very useful generic evaluators. */
 char *set_eval_int(void *data, char *value);
 char *set_eval_bool(void *data, char *value);
+
+#endif /* SET_H */

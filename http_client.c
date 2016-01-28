@@ -23,10 +23,13 @@
   Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#define _GNU_SOURCE
+
 #include <string.h>
 #include <stdio.h>
 
 #include "bitlbee.h"
+#include "proxy.h"
 #include "ssl_client.h"
 #include "url.h"
 

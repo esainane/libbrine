@@ -58,7 +58,6 @@ static void ssl_conn_free(struct scd *conn);
 static gboolean ssl_connected(gpointer data, gint source, b_input_condition cond);
 static gboolean ssl_starttls_real(gpointer data, gint source, b_input_condition cond);
 static gboolean ssl_handshake(gpointer data, gint source, b_input_condition cond);
-b_input_condition ssl_getdirection(void *conn);
 
 
 void ssl_init(void)

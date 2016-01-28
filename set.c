@@ -26,6 +26,7 @@
 #include "set.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <glib.h>
 
 #include "log.h"

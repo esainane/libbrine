@@ -12,6 +12,8 @@
 
 #include <glib.h>
 
+#include <unistd.h>
+
 void sha1_init(sha1_state_t *ctx)
 {
 	*ctx = g_checksum_new(G_CHECKSUM_SHA1);
