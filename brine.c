@@ -60,8 +60,8 @@ void load_plugins(void)
 }
 
 static struct prpl **plugins = 0;
-static plugins_num = 0;
-static plugins_max = 0;
+static int plugins_num = 0;
+static int plugins_max = 0;
 
 static struct brine *brine_callbacks;
 
