@@ -100,9 +100,9 @@ void imcb_log(struct im_connection *ic, char *fmt, ...)
 	va_end(params);
 
 	if (brine_callbacks && brine_callbacks->net_msgrecv) {
-		brine_callbacks->net_msgrecv(ic, text, 300);
+		brine_callbacks->net_msgrecv(ic->acc, text, 300);
 	} else {
-  	log_message(LOGLVL_INFO, "** %s > %s", ic->acc->prpl->name, text);
+		log_message(LOGLVL_INFO, "** %s > %s", ic->acc->prpl->name, text);
 	}
 	g_free(text);
 }
@@ -117,9 +117,9 @@ void imcb_error(struct im_connection *ic, char *fmt, ...)
 	va_end(params);
 
 	if (brine_callbacks && brine_callbacks->net_msgrecv) {
-		brine_callbacks->net_msgrecv(ic, text, 400);
+		brine_callbacks->net_msgrecv(ic->acc, text, 400);
 	} else {
-  	log_message(LOGLVL_ERROR, "** %s > %s", ic->acc->prpl->name, text);
+		log_message(LOGLVL_ERROR, "** %s > %s", ic->acc->prpl->name, text);
 	}
 	g_free(text);
 }
@@ -216,16 +216,19 @@ struct groupchat *imcb_chat_new(struct im_connection *ic, const char *handle)
 	}
 #endif
 
+	brine_callbacks->chan_add(ic->acc, handle);
 	return c;
 }
 void imcb_chat_add_buddy(struct groupchat *c, const char *handle) {
 	log_message(LOGLVL_INFO, "Want to add (%s) to groupchat (%p)", handle, c);
+	brine_callbacks->chan_join(c->ic->acc, handle, c->title);
 }
 void imcb_chat_free(struct groupchat *c) {
 	log_message(LOGLVL_INFO, "Want to free groupchat (%p)", c);
 }
 void imcb_chat_msg(struct groupchat *c, const char *who, char *msg, guint32 flags, time_t sent_at) {
 	log_message(LOGLVL_INFO, "Want to send message (%s) from (%s) to groupchat (%p) with flags (%u)", msg, who, c);
+	brine_callbacks->chan_msgrecv(c->ic->acc, msg, who, c->title);
 }
 void imcb_chat_name_hint(struct groupchat *c, const char *name) {
 	log_message(LOGLVL_INFO, "Want to set chat name hint for (%p) to (%s)", name);
@@ -264,12 +267,15 @@ void imcb_add_buddy(struct im_connection *ic, const char *handle, const char *gr
 		ic->acc->prpl->buddy_data_add(bu);
 	}
 	imcb_buddy_status(ic, handle, 0, NULL, NULL);
+	brine_callbacks->user_add(ic->acc, handle);
 }
 void imcb_remove_buddy(struct im_connection *ic, const char *handle, char *group) {
 	log_message(LOGLVL_INFO, "Want to remove (%s)", handle);
+	brine_callbacks->user_remove(ic->acc, handle);
 }
 void imcb_rename_buddy(struct im_connection *ic, const char *handle, const char *realname) {
 	log_message(LOGLVL_INFO, "Want to rename buddy (%s) to (%s)", handle, realname);
+	brine_callbacks->user_rename(ic->acc, handle, realname);
 }
 void imcb_buddy_nick_hint(struct im_connection *ic, const char *handle, const char *nick) {
 	log_message(LOGLVL_INFO, "Want to set buddy (%s) nick hint to (%s)", handle, nick);
@@ -296,12 +302,12 @@ void brine_init(struct brine *b) {
 	b_main_init();
 }
 
-void *brine_connect(const char *protocol, const char *username, const char *password, void (* config_callback)(struct set **)) {
+brine_handle brine_conn_init(const char *protocol, const char *username, const char *password, void (* config_callback)(struct set **)) {
 	/* Isolate things a bit more. We create an entirely new bee for each new brine connection. */
 	struct prpl *target = find_protocol(protocol);
 	if (!target) {
 		log_message(LOGLVL_ERROR, "No plugin found for (%s), cannot bootstrap!", protocol);
-		return;
+		return 0;
 	}
 	bee_t *bee = g_new0(struct bee, 1);
 	account_t *account = g_new0(struct account, 1);
@@ -317,14 +323,24 @@ void *brine_connect(const char *protocol, const char *username, const char *pass
 	if (config_callback) {
 		config_callback(&account->set);
 	}
-	log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", target->name);
-	target->login(account);
 	return account;
 }
 
-void brine_disconnect(void *connection) {
-	struct account *acc = connection;
-	struct im_connection *ic = acc->ic;
+brine_handle brine_conn_login(brine_handle handle) {
+	struct account *acc = handle;
+	log_message(LOGLVL_INFO, "Attempting to log in to %s...\n", acc->prpl->name);
+	acc->prpl->login(acc);
+	return acc;
+}
+
+brine_handle brine_connect(const char *protocol, const char *username, const char *password, void (* config_callback)(struct set **)) {
+	brine_handle handle = brine_conn_init(protocol, username, password, config_callback);
+	brine_conn_login(handle);
+	return handle;
+}
+
+void brine_disconnect(brine_handle handle) {
+	struct im_connection *ic = handle->ic;
 	GSList *l;
 	log_message(LOGLVL_INFO, "Logging out and cleaning up of %s (%s)...\n", ic->acc->user, ic->acc->prpl->name);
 	for (l = ic->bee->users; l; ) {
