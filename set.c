@@ -236,6 +236,32 @@ char *set_eval_int(void *data, char *value)
 	return value;
 }
 
+static int is_bool(char *value)
+{
+	if (*value == 0) {
+		return 0;
+	}
+
+	if ((g_strcasecmp(value,
+	                  "true") == 0) || (g_strcasecmp(value, "yes") == 0) || (g_strcasecmp(value, "on") == 0)) {
+		return 1;
+	}
+	if ((g_strcasecmp(value,
+	                  "false") == 0) || (g_strcasecmp(value, "no") == 0) || (g_strcasecmp(value, "off") == 0)) {
+		return 1;
+	}
+
+	while (*value) {
+		if (!g_ascii_isdigit(*value)) {
+			return 0;
+		} else {
+			value++;
+		}
+	}
+
+	return 1;
+}
+
 char *set_eval_bool(void *data, char *value)
 {
 	return is_bool(value) ? value : SET_INVALID;
