@@ -4,6 +4,7 @@ struct irc;
 struct bee;
 void register_protocol(struct prpl *plugin);
 gboolean root_command_add(const char *name, int params, void (*f)(struct irc *, char **args), int flags);
+void plugin_command_add(struct prpl *plugin, const char *name, int params, void (*f)(struct im_connection *ic, char **args));
 void imcb_connected(struct im_connection *ic);
 struct im_connection *imcb_new(struct account *acc);
 
@@ -17,6 +18,7 @@ void imcb_chat_free(struct groupchat *c);
 #define imcb_buddy_msg(ic, source, msg, flags, sent_at) log_message(LOGLVL_INFO, "MESSAGE <%s> %s", source, msg)
 
 void imcb_log(struct im_connection *ic, char *fmt, ...);
+void imcb_lognum(struct im_connection *ic, int num, char *fmt, ...);
 void imcb_error(struct im_connection *ic, char *fmt, ...);
 
 
@@ -25,3 +27,4 @@ void imcb_remove_buddy(struct im_connection *ic, const char *handle, char *group
 void imcb_rename_buddy(struct im_connection *ic, const char *handle, const char *realname);
 void imcb_buddy_nick_hint(struct im_connection *ic, const char *handle, const char *nick);
 struct bee_user *imcb_buddy_by_handle(struct im_connection *ic, const char *handle);
+void imcb_selfname(struct im_connection *ic, const char *name);

@@ -5,7 +5,11 @@
 
 #include "brine.h"
 
+#include "irc_downstream.h"
+
 #define PLUGINDIR "/usr/local/lib/bitlbee"
+
+static struct prpl *current_loading_plugin = 0;
 
 gboolean load_plugin(char *path)
 {
@@ -26,6 +30,11 @@ gboolean load_plugin(char *path)
 	}
 
 	init_function();
+
+	if (current_loading_plugin->cmd_num) {
+		commands_finalize(current_loading_plugin->cmds, current_loading_plugin->cmd_num);
+	}
+	current_loading_plugin = 0;
 
 	return TRUE;
 }
@@ -68,6 +77,7 @@ static struct brine *brine_callbacks;
 void register_protocol(struct prpl *plugin)
 {
     log_message(LOGLVL_INFO, "Received plugin for `%s'.", plugin->name);
+		current_loading_plugin = plugin;
 		if (plugins_num == plugins_max) {
 			plugins = realloc(plugins, (plugins_max += 5) * (sizeof(struct prpl *)));
 		}
@@ -107,6 +117,23 @@ void imcb_log(struct im_connection *ic, char *fmt, ...)
 	g_free(text);
 }
 
+void imcb_lognum(struct im_connection *ic, int num, char *fmt, ...)
+{
+	va_list params;
+	char *text;
+
+	va_start(params, fmt);
+	text = g_strdup_vprintf(fmt, params);
+	va_end(params);
+
+	if (brine_callbacks && brine_callbacks->net_msgrecv) {
+		brine_callbacks->net_msgrecv(ic->acc, text, num);
+	} else {
+		log_message(LOGLVL_INFO, "** %s > %s", ic->acc->prpl->name, text);
+	}
+	g_free(text);
+}
+
 void imcb_error(struct im_connection *ic, char *fmt, ...)
 {
 	va_list params;
@@ -124,11 +151,12 @@ void imcb_error(struct im_connection *ic, char *fmt, ...)
 	g_free(text);
 }
 
-
-
 gboolean root_command_add(const char *name, int params, void (*f)(irc_t *, char **args), int flags) {
-    log_message(LOGLVL_INFO, "Plugin wants to register root command `%s'.", name);
+	log_message(LOGLVL_INFO, "Plugin '%s' wants to register root command `%s'.", current_loading_plugin->name, name);
+	// plugin_command_add(current_loading_plugin, name, params, f);
+	return 0;
 }
+
 #if 0
 typedef enum {
 	ACC_FLAG_AWAY_MESSAGE = 0x01,   /* Supports away messages instead of just states. */
@@ -215,7 +243,7 @@ struct groupchat *imcb_chat_new(struct im_connection *ic, const char *handle)
 		bee->ui->chat_new(bee, c);
 	}
 #endif
-
+	log_message(LOGLVL_INFO, "Want to create new groupchat (%s)", handle);
 	brine_callbacks->chan_add(ic->acc, handle);
 	return c;
 }
@@ -293,6 +321,15 @@ struct bee_user *imcb_buddy_by_handle(struct im_connection *ic, const char *hand
 	}
 
 	return NULL;
+}
+
+void imcb_selfname(struct im_connection *ic, const char *handle) {
+	log_message(LOGLVL_INFO, "Attempting to set own name (%s)", handle);
+	brine_callbacks->net_setnick(ic->acc, handle);
+}
+
+void brine_putline(brine_handle handle, char *line) {
+	irc_downstream_putline(handle->ic, line);
 }
 
 void brine_init(struct brine *b) {

@@ -11,7 +11,9 @@ extern "C" {
 
 struct account;
 typedef struct account *brine_handle;
+
 struct brine {
+  int (* net_setnick)(USRCMD, const char *name);
   // Sends a message to/from a network buffer.
   int (* net_msgrecv)(MSGCMD, int type); // eg. status messages
   // Sends a message to/from a user
@@ -49,6 +51,9 @@ void brine_disconnect(brine_handle connection);
 void brine_eventloop(void);
 
 int brine_pluginexists(const char *);
+
+/* Parse an IRC formatted message */
+void brine_putline(brine_handle connection, char *line);
 
 /* WORKAROUND */
 struct set;
