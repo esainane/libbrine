@@ -6,9 +6,3 @@
 #define MOCKVA MOCK
 
 #include "mock.h"
-
-
-void closesocket(int fd)
-{
-	close(fd);
-}

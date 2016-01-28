@@ -57,6 +57,11 @@ struct PHB {
 	struct addrinfo *gai, *gai_cur;
 };
 
+void closesocket(int fd)
+{
+	close(fd);
+}
+
 typedef int (*proxy_connect_func)(const char *host, unsigned short port_, struct PHB *phb);
 
 static int proxy_connect_none(const char *host, unsigned short port_, struct PHB *phb);
