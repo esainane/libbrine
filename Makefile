@@ -40,7 +40,10 @@ clean:
 -include $(OBJS:.o=.d)
 
 install:
-	mkdir -p $(API_INCLUDE_DIR) $(INCLUDE_DIR) $(LIB_DIR) $(PC_DIR)
+	mkdir -p $(INCLUDE_DIR)
+	mkdir -p $(API_INCLUDE_DIR)
+	mkdir -p $(LIB_DIR)
+	mkdir -p $(PC_DIR)
 	$(INSTALL) -m 0644 *.h $(API_INCLUDE_DIR)
 	$(INSTALL) -m 0644 brine.h $(INCLUDE_DIR)
 	$(INSTALL) -m 0644 libbrine.so $(LIB_DIR)
