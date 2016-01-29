@@ -16,11 +16,10 @@ API_INCLUDE_DIR=$(INCLUDE_DIR)/api
 
 INSTALL=install -p
 
-CC=clang
+CC=$(shell which clang || which gcc)
 CFLAGS=-g -O2 -fno-strict-aliasing -Wno-deprecated-declarations
-# FIXME: Worst remnant of the quick hack, try pkg-config
-LIBFLAGS=-fPIC -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include
-LFLAGS=-lm -lssl -lcrypto -lglib-2.0 -lgmodule-2.0
+LIBFLAGS=-fPIC $(shell pkg-config --cflags openssl glib-2.0 gmodule-2.0)
+LFLAGS=-lm $(shell pkg-config --libs openssl glib-2.0 gmodule-2.0)
 
 all: $(LIB_TARGET) $(TEST_TARGET)
 
